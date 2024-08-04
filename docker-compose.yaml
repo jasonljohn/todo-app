@@ -6,13 +6,15 @@ services:
       context: ./frontend/vue-todo-app
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8082:8080"
     volumes:
       - ./frontend/vue-todo-app:/app
       - /app/node_modules
     command: npm run serve
     depends_on:
       - backend
+    networks:
+      - app-network
 
   backend:
     build:
@@ -24,6 +26,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       - db
+    networks:
+      - app-network
 
   db:
     image: postgres:15
@@ -33,6 +37,23 @@ services:
       POSTGRES_PASSWORD: yourpassword
     volumes:
       - todo-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    ports:
+      - "8081:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    depends_on:
+      - db
+    networks:
+      - app-network
 
 volumes:
   todo-data:
+
+networks:
+  app-network:
